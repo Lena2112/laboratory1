@@ -1,4 +1,5 @@
 #include <stdafx.h>
+#include <conio.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -13,21 +14,54 @@
 // see also https://ps-group.github.io/sfml/coding_conventions.html
 // TODO: fix negative height values, fix heigh values higher than max height.
 
-
-int main(int, char *[])
+float GetTimeWhenTheMaximumHeight()
 {
 	const float g = 9.8f;
-	float timeWhenTheMaximumHeight;
 	int theMaximumJumpHeight;
-	printf("The maximum jump height: ");
-	if (0 == scanf("%d", &theMaximumJumpHeight))
+	bool flag = false;
+	while (!flag)
 	{
-		printf("\nexpected floating-point number\n");
-		exit(1);
+	    printf("The maximum jump height: ");
+	    if (0 == scanf("%d", &theMaximumJumpHeight))
+	    {
+		    printf("\nexpected floating-point number\n");
+		    exit(1);
+	    }
+		if (theMaximumJumpHeight > 0 && theMaximumJumpHeight < INT_MAX)
+		{
+			flag = true;
+		}
+		else
+		{
+			printf("value must be greater than zero" "\n");
+		}
 	}
+	float timeWhenTheMaximumHeight = sqrt(theMaximumJumpHeight * 2 / g);
+	return timeWhenTheMaximumHeight;
+}
 
-	timeWhenTheMaximumHeight = sqrt(theMaximumJumpHeight * 2 / g);
-	printf("time when the maximum height=%f\n", timeWhenTheMaximumHeight);
+float ReceiveAnInitialSpeed(const float currentTimePoint)
+{
+	const float g = 9.8f;
+	float v0 = g * currentTimePoint;
+	return v0;
+}
+
+void DisplayStateAtTheMoment(const float currentTimePoint, const float v0)
+{
+	const float g = 9.8f;
+	double jumpHeight = v0 * currentTimePoint - 0.5 * g * currentTimePoint * currentTimePoint;
+	if (jumpHeight >= 0)
+	{
+		printf("Time=%f, jump height=%f\n", currentTimePoint, jumpHeight);
+	}
+	return;
+}
+
+void OutputOnDisplay(const float timeWhenTheMaximumHeight)
+{
+	const float g = 9.8f;
+	printf("Time when the maximum height:%f\n", timeWhenTheMaximumHeight);
 	bool passedHalfWay = false;
 	for (float currentTimePoint = 0; currentTimePoint < timeWhenTheMaximumHeight * 2; currentTimePoint += 0.1f)
 	{
@@ -35,20 +69,28 @@ int main(int, char *[])
 		{
 			passedHalfWay = true;
 			float v0 = g * timeWhenTheMaximumHeight;
-			float jumpHeight = v0 * timeWhenTheMaximumHeight - 0.5 * g * timeWhenTheMaximumHeight * timeWhenTheMaximumHeight;
-			printf("time when the maximum height=%f, the maximum jump height=%f\n", timeWhenTheMaximumHeight, jumpHeight);
+			DisplayStateAtTheMoment(timeWhenTheMaximumHeight, v0);
 		}
 		float v0 = g * timeWhenTheMaximumHeight;
-		float jumpHeight = v0 * currentTimePoint - 0.5 * g * currentTimePoint * currentTimePoint;
-		printf("time=%f, jump height=%f\n", currentTimePoint, jumpHeight);
+		DisplayStateAtTheMoment(currentTimePoint, v0);
 	}
+	return;
+}
 
-	float v0 = g * timeWhenTheMaximumHeight;
-	float jumpHeight = v0 * (timeWhenTheMaximumHeight * 2) - 0.5 * g * (timeWhenTheMaximumHeight * 2) * (timeWhenTheMaximumHeight * 2);
-	printf("time of the end jump=%f, jump height=%f\n", timeWhenTheMaximumHeight * 2, jumpHeight);
+void PpressingExpectation()
+{
+	printf("To exit, press any key");
+	getch();
+}
 
-	system("pause");
+int main(int, char *[])
+{
+	float timeWhenTheMaximumHeight = GetTimeWhenTheMaximumHeight();
+	OutputOnDisplay(timeWhenTheMaximumHeight);
+	float v0 = ReceiveAnInitialSpeed(timeWhenTheMaximumHeight);
+	DisplayStateAtTheMoment(timeWhenTheMaximumHeight * 2, v0);
 
+	PpressingExpectation();
 	return 0;
 }
 
