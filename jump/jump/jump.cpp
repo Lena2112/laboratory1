@@ -1,5 +1,3 @@
-// ≈сли используетс€ stdafx.h, перенесите директиву define в начало stdafx.h, 
-
 #include <stdafx.h>
 #include <iostream>
 #include <string>
@@ -14,46 +12,41 @@
 // TODO: Rename variables and split to several functions,
 // see also https://ps-group.github.io/sfml/coding_conventions.html
 // TODO: fix negative height values, fix heigh values higher than max height.
+
+
 int main(int, char *[])
 {
 	const float g = 9.8f;
-	float T;
-	float Vn;
-	int S;
-	int M;
-	printf("S: ");
-	if (0 == scanf("%d", &S))
+	float timeWhenTheMaximumHeight;
+	int theMaximumJumpHeight;
+	printf("The maximum jump height: ");
+	if (0 == scanf("%d", &theMaximumJumpHeight))
 	{
-		printf("\n" "expected floating-point number" "\n");
+		printf("\nexpected floating-point number\n");
 		exit(1);
 	}
-	// T - time point when height is at maximum.
-	// t - current time point
-	// v(t) == v0 - g * t
-	// v0 = g * T
-	// s(t) == v0 * t - 0.5 * g * t * t
-	T = sqrt(S * 2 / g);
-	printf("T=%f\n", T);
-	bool flag = false;
-	for (float t = 0; t < T * 2; t += 0.1f)
+
+	timeWhenTheMaximumHeight = sqrt(theMaximumJumpHeight * 2 / g);
+	printf("time when the maximum height=%f\n", timeWhenTheMaximumHeight);
+	bool passedHalfWay = false;
+	for (float currentTimePoint = 0; currentTimePoint < timeWhenTheMaximumHeight * 2; currentTimePoint += 0.1f)
 	{
-		if (t > T && !flag)
+		if (currentTimePoint > timeWhenTheMaximumHeight && !passedHalfWay)
 		{
-			flag = true;
-			float V0 = g * T;
-			float s = V0 * T - 0.5 * g * T * T;
-			printf("t=%f, s=%f\n", T, s);
+			passedHalfWay = true;
+			float v0 = g * timeWhenTheMaximumHeight;
+			float jumpHeight = v0 * timeWhenTheMaximumHeight - 0.5 * g * timeWhenTheMaximumHeight * timeWhenTheMaximumHeight;
+			printf("time when the maximum height=%f, the maximum jump height=%f\n", timeWhenTheMaximumHeight, jumpHeight);
 		}
-		float V0 = g * T;
-		float s = V0 * t - 0.5 * g * t * t;
-		printf("t=%f, s=%f\n", t, s);
+		float v0 = g * timeWhenTheMaximumHeight;
+		float jumpHeight = v0 * currentTimePoint - 0.5 * g * currentTimePoint * currentTimePoint;
+		printf("time=%f, jump height=%f\n", currentTimePoint, jumpHeight);
 	}
 
-	float V0 = g * T;
-	float s = V0 * (T*2) - 0.5 * g * (T * 2) * (T * 2);
-	printf("t=%f, s=%f\n", T * 2, s);
+	float v0 = g * timeWhenTheMaximumHeight;
+	float jumpHeight = v0 * (timeWhenTheMaximumHeight * 2) - 0.5 * g * (timeWhenTheMaximumHeight * 2) * (timeWhenTheMaximumHeight * 2);
+	printf("time of the end jump=%f, jump height=%f\n", timeWhenTheMaximumHeight * 2, jumpHeight);
 
-	// TODO: remove system("pause") and never use it again.
 	system("pause");
 
 	return 0;
