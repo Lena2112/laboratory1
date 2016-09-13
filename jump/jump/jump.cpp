@@ -4,15 +4,17 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#define g 9.8f
 
 // This program takes max jump height from input and prints
 // jump height for every time point with step 0.1 seconds.
 // Program should print all time points when height is min and max.
-//
-// TODO: Fix all warnings on high warning level (/W4, -Wall -Wextra).
-// TODO: Rename variables and split to several functions,
-// see also https://ps-group.github.io/sfml/coding_conventions.html
-// TODO: fix negative height values, fix heigh values higher than max height.
+
+int GetTheMaximumJumpHeight();
+void DisplayStateAtTheMoment(const float currentTimePoint, const float v0);
+void OutputOnDisplay(const float timeWhenTheMaximumHeight);
+void PpressingExpectation();
+
 
 int GetTheMaximumJumpHeight()
 {
@@ -38,7 +40,7 @@ int GetTheMaximumJumpHeight()
     return theMaximumJumpHeight;
 }
 
-void DisplayStateAtTheMoment(const float currentTimePoint, const float v0, const float g)
+void DisplayStateAtTheMoment(const float currentTimePoint, const float v0)
 {
     double jumpHeight = v0 * currentTimePoint - 0.5 * g * currentTimePoint * currentTimePoint;
     if (jumpHeight >= 0)
@@ -48,7 +50,7 @@ void DisplayStateAtTheMoment(const float currentTimePoint, const float v0, const
     return;
 }
 
-void OutputOnDisplay(const float timeWhenTheMaximumHeight, const float g)
+void OutputOnDisplay(const float timeWhenTheMaximumHeight)
 {
     printf("Time when the maximum height:%f\n", timeWhenTheMaximumHeight);
     float v0 = g * timeWhenTheMaximumHeight;
@@ -58,11 +60,11 @@ void OutputOnDisplay(const float timeWhenTheMaximumHeight, const float g)
         if (currentTimePoint > timeWhenTheMaximumHeight && !passedHalfWay)
         {
             passedHalfWay = true;
-            DisplayStateAtTheMoment(timeWhenTheMaximumHeight, v0, g);
+            DisplayStateAtTheMoment(timeWhenTheMaximumHeight, v0);
         }
-        DisplayStateAtTheMoment(currentTimePoint, v0, g);
+        DisplayStateAtTheMoment(currentTimePoint, v0);
     }
-    DisplayStateAtTheMoment(timeWhenTheMaximumHeight * 2, v0, g);
+    DisplayStateAtTheMoment(timeWhenTheMaximumHeight * 2, v0);
     return;
 }
 
@@ -72,12 +74,11 @@ void PpressingExpectation()
     getch();
 }
 
-int main(int, char *[])
+int main()
 {
-    const float g = 9.8f;
     int theMaximumJumpHeight = GetTheMaximumJumpHeight();
     float timeWhenTheMaximumHeight = sqrt(theMaximumJumpHeight * 2 / g);
-    OutputOnDisplay(timeWhenTheMaximumHeight, g);    
+    OutputOnDisplay(timeWhenTheMaximumHeight);    
 
     PpressingExpectation();
     return 0;
