@@ -28,7 +28,8 @@ struct ClockStruct
 
 void CreateDigits(int i, float angle, ClockStruct & clock, const Vector2f & windowCenter)
 {
-	float x, y;
+	float x;
+	float y;
 	int num = i / 5;
 	x = (CLOCK_CIRCLE_SIZE - 10) * cos(angle - (M_PI / 3));
 	y = (CLOCK_CIRCLE_SIZE - 10) * sin(angle - (M_PI / 3));
@@ -38,14 +39,15 @@ void CreateDigits(int i, float angle, ClockStruct & clock, const Vector2f & wind
 	clock.digit[num].setCharacterSize(35);
 	clock.digit[num].setFillColor(Color(86, 3, 25));
 	clock.digit[num].setStyle(Text::Bold);
-	Vector2f positionText(Vector2f((CLOCK_CIRCLE_SIZE - 50) * cos(angle - 1.05), (CLOCK_CIRCLE_SIZE - 50) * sin(angle - 1.05)) + windowCenter);
+	Vector2f digitPosition(Vector2f((CLOCK_CIRCLE_SIZE - 50) * cos(angle - 1.05), (CLOCK_CIRCLE_SIZE - 50) * sin(angle - 1.05)) + windowCenter);
 	clock.digit[num].setOrigin(clock.digit[num].getGlobalBounds().width / 2.0f, clock.digit[num].getGlobalBounds().height);
-	clock.digit[num].setPosition(positionText.x, positionText.y);
+	clock.digit[num].setPosition(digitPosition.x, digitPosition.y);
 }
 
 void CreatePoints(const RenderWindow & window, const Vector2f & windowCenter, ClockStruct & clock)
 {
-	float x, y;
+	float x;
+	float y;
 	float angle = 0.0;
 	for (int i = 0; i < NUMBER_DOTS; i++)
 	{
@@ -160,33 +162,41 @@ void RotateArrows(ClockStruct & clock)
 	clock.secondsHand.setRotation(ptm->tm_sec * 6);
 }
 
+void DrawDigits(RenderWindow & window, ClockStruct & clock)
+{
+	for (int i = 0; i < NUMBER_DOTS; i++)
+	{
+		window.draw(clock.dot[i]);
+		if (i % 5 == 0)
+		{
+			window.draw(clock.digit[i / 5]);
+		}
+	}
+}
+
+void DrawClock(RenderWindow & window, ClockStruct & clock)
+{
+	window.clear(Color::White);
+
+	window.draw(clock.clockCircle);
+
+	DrawDigits(window, clock);
+
+	window.draw(clock.hourHand);
+	window.draw(clock.minuteHand);
+	window.draw(clock.secondsHand);
+	window.draw(clock.centerCircle);
+
+	window.display();
+}
+
 void ProcessMainLoop(RenderWindow & window, ClockStruct & clock)
 {
 	while (window.isOpen())
 	{
 		HandleEvents(window);
-
 		RotateArrows(clock);
-
-		window.clear(Color::White);
-
-		window.draw(clock.clockCircle);
-
-		for (int i = 0; i < NUMBER_DOTS; i++)
-		{
-			window.draw(clock.dot[i]);
-			if (i % 5 == 0)
-			{
-				window.draw(clock.digit[i / 5]);
-			}
-		}
-
-		window.draw(clock.hourHand);
-		window.draw(clock.minuteHand);
-		window.draw(clock.secondsHand);
-		window.draw(clock.centerCircle);
-
-		window.display();
+		DrawClock(window, clock);
 	}
 }
 

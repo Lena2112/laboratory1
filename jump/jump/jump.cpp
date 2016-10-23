@@ -1,26 +1,26 @@
-#include <stdafx.h>
+#include "stdafx.h"
 #include <conio.h>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <cmath>
-#define g 9.8f
+static const float g = 9.8f;
 
 // This program takes max jump height from input and prints
 // jump height for every time point with step 0.1 seconds.
 // Program should print all time points when height is min and max.
 
 int GetTheMaximumJumpHeight();
-void DisplayStateAtTheMoment(const float currentTimePoint, const float v0);
-void OutputOnDisplay(const float timeWhenTheMaximumHeight);
+void DisplayStateAtTheMoment(const float &currentTimePoint, const float &v0);
+void OutputOnDisplay(const float &timeWhenTheMaximumHeight);
 void PpressingExpectation();
 
 
 int GetTheMaximumJumpHeight()
 {
     int theMaximumJumpHeight;
-    bool flag = false;
-    while (!flag)
+	bool IsValidHeight = false;
+	while (!IsValidHeight)
     {
         printf("The maximum jump height: ");
         if (0 == scanf("%d", &theMaximumJumpHeight))
@@ -28,9 +28,9 @@ int GetTheMaximumJumpHeight()
             printf("\nexpected floating-point number\n");
             exit(1);
         }
-        if (theMaximumJumpHeight > 0 && theMaximumJumpHeight < INT_MAX)
+        if (theMaximumJumpHeight >= 0)
         {
-            flag = true;
+			IsValidHeight = true;
         }
         else
         {
@@ -40,7 +40,7 @@ int GetTheMaximumJumpHeight()
     return theMaximumJumpHeight;
 }
 
-void DisplayStateAtTheMoment(const float currentTimePoint, const float v0)
+void DisplayStateAtTheMoment(const float &currentTimePoint, const float &v0)
 {
     double jumpHeight = v0 * currentTimePoint - 0.5 * g * currentTimePoint * currentTimePoint;
     if (jumpHeight >= 0)
@@ -50,7 +50,7 @@ void DisplayStateAtTheMoment(const float currentTimePoint, const float v0)
     return;
 }
 
-void OutputOnDisplay(const float timeWhenTheMaximumHeight)
+void OutputOnDisplay(const float &timeWhenTheMaximumHeight)
 {
     printf("Time when the maximum height:%f\n", timeWhenTheMaximumHeight);
     float v0 = g * timeWhenTheMaximumHeight;
@@ -68,19 +68,12 @@ void OutputOnDisplay(const float timeWhenTheMaximumHeight)
     return;
 }
 
-void PpressingExpectation()
-{
-    printf("To exit, press any key");
-    getch();
-}
-
 int main()
 {
     int theMaximumJumpHeight = GetTheMaximumJumpHeight();
     float timeWhenTheMaximumHeight = sqrt(theMaximumJumpHeight * 2 / g);
     OutputOnDisplay(timeWhenTheMaximumHeight);    
 
-    PpressingExpectation();
     return 0;
 }
 
