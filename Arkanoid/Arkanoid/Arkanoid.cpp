@@ -34,11 +34,17 @@ struct Paddle
 		shape.move(velocity);
 
 		if (Keyboard::isKeyPressed(Keyboard::Key::Left) && left() > 0)
+		{
 			velocity.x = -PADDLE_VELOCITY * 2.f;
+		}
 		else if (Keyboard::isKeyPressed(Keyboard::Key::Right) && right() < WINDOW_WIDTH)
+		{
 			velocity.x = PADDLE_VELOCITY * 2.f;
+		}
 		else
+		{
 			velocity.x = 0.f;
+		}
 	}
 
 	float x() 		{ return shape.getPosition().x; }
@@ -69,14 +75,22 @@ struct Ball
 		shape.move(velocity);
 
 		if (left() < 0)
+		{
 			velocity.x = BALL_VELOCITY;
+		}
 		else if (right() > WINDOW_WIDTH)
+		{
 			velocity.x = -BALL_VELOCITY;
+		}
 
 		if (top() < 0)
+		{
 			velocity.y = BALL_VELOCITY;
+		}
 		else if (bottom() > WINDOW_HEIGHT)
+		{
 			velocity.y = -BALL_VELOCITY;
+		}
 	}
 
 	float x() 		{ return shape.getPosition().x; }
@@ -122,19 +136,28 @@ template<class T1, class T2> bool isIntersecting(T1& mA, T2& mB)
 bool TestCollision(Paddle& mPaddle, Ball& mBall)
 {
 	if (mBall.y() + BALL_RADIUS >= WINDOW_HEIGHT)
+	{
 		return 0;
+	}
+		
 
 	if (!isIntersecting(mPaddle, mBall))
+	{
 		return 1;
+	}
 
 	mBall.velocity.y = -BALL_VELOCITY;
 
 	// Горизонтальное направление мяча меняестся
 	// в зависимости от места удара об контроллер
 	if (mBall.x() < mPaddle.x())
+	{
 		mBall.velocity.x = -BALL_VELOCITY;
+	}
 	else
+	{
 		mBall.velocity.x = BALL_VELOCITY;
+	}
 	return 1;
 }
 
@@ -151,7 +174,9 @@ void CreateBackground(vector<Brick> & bricks, Texture & t, int & i)
 void TestCollision(Brick & mBrick, Ball & mBall, vector<Brick> & bricks, Texture & t, int & i)
 {	
 	if (!isIntersecting(mBrick, mBall))
+	{
 		return;
+	}
 
 	mBrick.destroyed = true;
 	CreateBackground(bricks, t, i);
@@ -176,9 +201,13 @@ void TestCollision(Brick & mBrick, Ball & mBall, vector<Brick> & bricks, Texture
 	// можем утверждать, что мяч ударился о горизонтальную сторону блока,
 	// в противном случае - о вертикальную
 	if (abs(minOverlapX) < abs(minOverlapY))
+	{
 		mBall.velocity.x = ballFromLeft ? -BALL_VELOCITY : BALL_VELOCITY;
+	}
 	else
+	{
 		mBall.velocity.y = ballFromTop ? -BALL_VELOCITY : BALL_VELOCITY;
+	}
 }
 
 void CreateBackground(Texture & t, Sprite & s)
@@ -188,6 +217,70 @@ void CreateBackground(Texture & t, Sprite & s)
 	s.setTextureRect(IntRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
 }
 
+void ArkanoidEvents(RenderWindow & window)
+{
+	Event event;
+	while (window.pollEvent(event))
+	{
+		if (event.type == Event::Closed)
+		{
+			window.close();
+		}
+	}
+}
+
+void ProcessGame(Paddle & paddle, Ball & ball, vector<Brick> & bricks, Texture & t, int & i)
+{
+	paddle.update();
+	ball.update();
+	if (!TestCollision(paddle, ball))
+	{
+		// ПРОИГРЫШ
+	}
+	for (auto& brick : bricks)
+	{
+		TestCollision(brick, ball, bricks, t, i);
+	}
+
+	bricks.erase(
+		remove_if(begin(bricks), end(bricks), [](const Brick& mBrick){ return mBrick.destroyed; }),
+		end(bricks));
+
+	if (bricks.size() == 0)
+	{
+		// ПОБЕДА
+	}
+}
+
+void DrawArkanoid(RenderWindow & window, Paddle & paddle, Ball & ball, vector<Brick> & bricks, Sprite s)
+{
+	window.clear();
+
+	window.draw(s);
+	window.draw(paddle.shape);
+	window.draw(ball.shape);
+	for (auto& brick : bricks)
+	{
+		window.draw(brick.shape);
+	}
+
+	window.display();
+}
+
+void ProcessMainLoop(RenderWindow & window, Paddle & paddle, Ball & ball, vector<Brick> & bricks)
+{
+	Texture t;
+	Sprite s;
+	int i = 0;
+	CreateBackground(t, s);
+	while (window.isOpen())
+	{
+		ArkanoidEvents(window);
+		ProcessGame(paddle, ball, bricks, t, i);
+		DrawArkanoid(window, paddle, ball, bricks, s);
+	}
+}
+
 int main(int argc, char * argv[])
 {
 	Paddle paddle{ WINDOW_WIDTH / 2.f, WINDOW_HEIGHT - PADDLE_HEIGHT / 2.f };
@@ -195,54 +288,17 @@ int main(int argc, char * argv[])
 
 	vector<Brick> bricks;
 	for (int iX = 0; iX < COUNT_BLOCS_X; ++iX)
+	{
 		for (int iY = 0; iY < COUNT_BLOCS_Y; ++iY)
+		{
 			bricks.emplace_back((iX + 1) * (BLOCK_WIDTH + 3) + 22, (iY + 2) * (BLOCK_HEIGHT + 3));
+		}
+	}
 
 	RenderWindow window{ { WINDOW_WIDTH, WINDOW_HEIGHT }, "Arkanoid" };
 	window.setFramerateLimit(40);
-
-	Texture t;
-	Sprite s;
-	int i = 0;
-	CreateBackground(t, s);
-	while (window.isOpen())
-	{
-		window.clear();
-			
-		window.draw(s);
-		Event event;
-		while (window.pollEvent(event))
-		{
-			if (event.type == Event::Closed)
-				window.close();
-		}
-
-		paddle.update();
-		ball.update();
-		if (!TestCollision(paddle, ball))
-		{
-			// ПРОИГРЫШ
-		}
-		for (auto& brick : bricks)
-			TestCollision(brick, ball, bricks, t, i);
-
-		bricks.erase(
-			remove_if(begin(bricks), end(bricks), [](const Brick& mBrick){ return mBrick.destroyed; }),
-			end(bricks));	
-
-		if (bricks.size() == 0)
-		{
-			// ПОБЕДА
-		}
-
-		window.draw(paddle.shape);
-		window.draw(ball.shape);
-		for (auto& brick : bricks)
-			window.draw(brick.shape);
-
-		window.display();
-	}
-
+	
+	ProcessMainLoop(window, paddle, ball, bricks);
 	return 0;
 }
 
