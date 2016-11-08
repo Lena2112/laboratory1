@@ -124,6 +124,12 @@ struct Brick
 	float bottom()	{ return y() + shape.getSize().y / 2.f; }
 };
 
+struct GameStruct
+{
+	Paddle paddle{ WINDOW_WIDTH / 2.f, WINDOW_HEIGHT - PADDLE_HEIGHT / 2.f };
+	vector<Brick> bricks;
+	Ball mBall{ WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f };
+};
 
 // Функция проверяет пересечение двух фигур
 template<class T1, class T2> bool isIntersecting(T1& mA, T2& mB)
@@ -133,30 +139,30 @@ template<class T1, class T2> bool isIntersecting(T1& mA, T2& mB)
 }
 
 // Функция проверяет пересечение мяча и контроллера
-bool TestCollision(Paddle& mPaddle, Ball& mBall)
+bool TestCollision(GameStruct & game)
 {
-	if (mBall.y() + BALL_RADIUS >= WINDOW_HEIGHT)
+	if (game.mBall.y() + BALL_RADIUS >= WINDOW_HEIGHT)
 	{
 		return 0;
 	}
 		
 
-	if (!isIntersecting(mPaddle, mBall))
+	if (!isIntersecting(game.paddle, game.mBall))
 	{
 		return 1;
 	}
 
-	mBall.velocity.y = -BALL_VELOCITY;
+	game.mBall.velocity.y = -BALL_VELOCITY;
 
 	// Горизонтальное направление мяча меняестся
 	// в зависимости от места удара об контроллер
-	if (mBall.x() < mPaddle.x())
+	if (game.mBall.x() < game.paddle.x())
 	{
-		mBall.velocity.x = -BALL_VELOCITY;
+		game.mBall.velocity.x = -BALL_VELOCITY;
 	}
 	else
 	{
-		mBall.velocity.x = BALL_VELOCITY;
+		game.mBall.velocity.x = BALL_VELOCITY;
 	}
 	return 1;
 }
@@ -171,20 +177,20 @@ void CreateBackground(vector<Brick> & bricks, Texture & t, int & i)
 	}
 }
 
-void TestCollision(Brick & mBrick, Ball & mBall, vector<Brick> & bricks, Texture & t, int & i)
+void TestCollision(Brick & mBrick, GameStruct & game, Texture & t, int & i)
 {	
-	if (!isIntersecting(mBrick, mBall))
+	if (!isIntersecting(mBrick, game.mBall))
 	{
 		return;
 	}
 
 	mBrick.destroyed = true;
-	CreateBackground(bricks, t, i);
+	CreateBackground(game.bricks, t, i);
 
-	float overlapLeft{ mBall.right() - mBrick.left() };
-	float overlapRight{ mBrick.right() - mBall.left() };
-	float overlapTop{ mBall.bottom() - mBrick.top() };
-	float overlapBottom{ mBrick.bottom() - mBall.top() };
+	float overlapLeft{ game.mBall.right() - mBrick.left() };
+	float overlapRight{ mBrick.right() - game.mBall.left() };
+	float overlapTop{ game.mBall.bottom() - mBrick.top() };
+	float overlapBottom{ mBrick.bottom() - game.mBall.top() };
 
 	// Если пересечение слева меньше пересечения справа,
 	// можно утверждать, что мяч ударился о блок с левой стороны
@@ -202,11 +208,11 @@ void TestCollision(Brick & mBrick, Ball & mBall, vector<Brick> & bricks, Texture
 	// в противном случае - о вертикальную
 	if (abs(minOverlapX) < abs(minOverlapY))
 	{
-		mBall.velocity.x = ballFromLeft ? -BALL_VELOCITY : BALL_VELOCITY;
+		game.mBall.velocity.x = ballFromLeft ? -BALL_VELOCITY : BALL_VELOCITY;
 	}
 	else
 	{
-		mBall.velocity.y = ballFromTop ? -BALL_VELOCITY : BALL_VELOCITY;
+		game.mBall.velocity.y = ballFromTop ? -BALL_VELOCITY : BALL_VELOCITY;
 	}
 }
 
@@ -229,76 +235,102 @@ void ArkanoidEvents(RenderWindow & window)
 	}
 }
 
-void ProcessGame(Paddle & paddle, Ball & ball, vector<Brick> & bricks, Texture & t, int & i)
+void Processgame(GameStruct & game, Texture & t, int & i, bool & gameover, bool & victory)
 {
-	paddle.update();
-	ball.update();
-	if (!TestCollision(paddle, ball))
+	game.paddle.update();
+	game.mBall.update();
+	for (auto& brick : game.bricks)
+	{
+		TestCollision(brick, game, t, i);
+	}
+
+	game.bricks.erase(
+		remove_if(begin(game.bricks), end(game.bricks), [](const Brick& mBrick){ return mBrick.destroyed; }),
+		end(game.bricks));
+	if (!TestCollision(game))
 	{
 		// ПРОИГРЫШ
+		gameover = true;
 	}
-	for (auto& brick : bricks)
-	{
-		TestCollision(brick, ball, bricks, t, i);
-	}
-
-	bricks.erase(
-		remove_if(begin(bricks), end(bricks), [](const Brick& mBrick){ return mBrick.destroyed; }),
-		end(bricks));
-
-	if (bricks.size() == 0)
+	if (game.bricks.size() == 0)
 	{
 		// ПОБЕДА
+		victory = true;
 	}
 }
 
-void DrawArkanoid(RenderWindow & window, Paddle & paddle, Ball & ball, vector<Brick> & bricks, Sprite s)
+void DrawArkanoid(RenderWindow & window, GameStruct & game, Sprite s, bool & gameover, bool & victory)
 {
+	Font font;
+	font.loadFromFile("font.ttf");
 	window.clear();
 
 	window.draw(s);
-	window.draw(paddle.shape);
-	window.draw(ball.shape);
-	for (auto& brick : bricks)
+	window.draw(game.paddle.shape);
+	window.draw(game.mBall.shape);
+	for (auto& brick : game.bricks)
 	{
 		window.draw(brick.shape);
 	}
-
+	if (gameover)
+	{
+		Text gameOver;
+		gameOver.setFont(font);
+		gameOver.setCharacterSize(60);
+		gameOver.setFillColor(Color::White);
+		gameOver.setStyle(Text::Bold);
+		gameOver.setPosition(WINDOW_WIDTH * 2 / 5, WINDOW_HEIGHT * 2 / 5);
+		gameOver.setString("game Over");
+		window.draw(gameOver);
+	}
+	if (victory)
+	{
+		Text Victory;
+		Victory.setFont(font);
+		Victory.setCharacterSize(60);
+		Victory.setFillColor(Color::White);
+		Victory.setStyle(Text::Bold);
+		Victory.setPosition(WINDOW_WIDTH * 2 / 5, WINDOW_HEIGHT * 2 / 5);
+		Victory.setString("Victory!!!");
+		window.draw(Victory);
+	}
 	window.display();
 }
 
-void ProcessMainLoop(RenderWindow & window, Paddle & paddle, Ball & ball, vector<Brick> & bricks)
+void ProcessMainLoop(RenderWindow & window, GameStruct & game)
 {
 	Texture t;
 	Sprite s;
 	int i = 0;
+	bool victory = false;
+	bool gameover = false;
 	CreateBackground(t, s);
 	while (window.isOpen())
 	{
-		ArkanoidEvents(window);
-		ProcessGame(paddle, ball, bricks, t, i);
-		DrawArkanoid(window, paddle, ball, bricks, s);
+		if (!gameover && !victory)
+		{
+			ArkanoidEvents(window);
+			Processgame(game, t, i, gameover, victory);
+			DrawArkanoid(window, game, s, gameover, victory);
+		}
 	}
 }
 
 int main(int argc, char * argv[])
 {
-	Paddle paddle{ WINDOW_WIDTH / 2.f, WINDOW_HEIGHT - PADDLE_HEIGHT / 2.f };
-	Ball ball{ WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f };
-
-	vector<Brick> bricks;
+	GameStruct game;
 	for (int iX = 0; iX < COUNT_BLOCS_X; ++iX)
 	{
 		for (int iY = 0; iY < COUNT_BLOCS_Y; ++iY)
 		{
-			bricks.emplace_back((iX + 1) * (BLOCK_WIDTH + 3) + 22, (iY + 2) * (BLOCK_HEIGHT + 3));
+			game.bricks.emplace_back((iX + 1) * (BLOCK_WIDTH + 3) + 22, (iY + 2) * (BLOCK_HEIGHT + 3));
 		}
 	}
 
 	RenderWindow window{ { WINDOW_WIDTH, WINDOW_HEIGHT }, "Arkanoid" };
 	window.setFramerateLimit(40);
 	
-	ProcessMainLoop(window, paddle, ball, bricks);
+	ProcessMainLoop(window, game);
 	return 0;
 }
 
