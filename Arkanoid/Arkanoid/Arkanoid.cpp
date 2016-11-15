@@ -8,7 +8,7 @@ using namespace std;
 using namespace sf;
 
 unsigned int WINDOW_WIDTH = 1280, WINDOW_HEIGHT = 720;
-const float BALL_RADIUS = 10.f, BALL_VELOCITY = 8.f;
+const float BALL_RADIUS = 10.f, BALL_VELOCITY = 7.f;
 const float PADDLE_WIDTH = 120.f, PADDLE_HEIGHT = 20.f, PADDLE_VELOCITY = 6.f;
 
 const float BLOCK_WIDTH = 60.f, BLOCK_HEIGHT = 20.f;
@@ -277,7 +277,7 @@ void DrawArkanoid(RenderWindow & window, GameStruct & game, Sprite s, bool & gam
 		Text gameOver;
 		gameOver.setFont(font);
 		gameOver.setCharacterSize(60);
-		gameOver.setFillColor(Color::White);
+		gameOver.setFillColor(Color::Black);
 		gameOver.setStyle(Text::Bold);
 		gameOver.setPosition(WINDOW_WIDTH * 2 / 5, WINDOW_HEIGHT * 2 / 5);
 		gameOver.setString("game Over");
@@ -288,7 +288,7 @@ void DrawArkanoid(RenderWindow & window, GameStruct & game, Sprite s, bool & gam
 		Text Victory;
 		Victory.setFont(font);
 		Victory.setCharacterSize(60);
-		Victory.setFillColor(Color::White);
+		Victory.setFillColor(Color::Black);
 		Victory.setStyle(Text::Bold);
 		Victory.setPosition(WINDOW_WIDTH * 2 / 5, WINDOW_HEIGHT * 2 / 5);
 		Victory.setString("Victory!!!");
