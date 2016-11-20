@@ -1,4 +1,4 @@
-#include "stdafx.h"
+п»ї#include "stdafx.h"
 #include <SFML/Graphics.hpp>
 #include <cmath>
 #include <vector>
@@ -7,12 +7,18 @@
 using namespace std;
 using namespace sf;
 
-unsigned int WINDOW_WIDTH = 1280, WINDOW_HEIGHT = 720;
-const float BALL_RADIUS = 10.f, BALL_VELOCITY = 8.f;
-const float PADDLE_WIDTH = 120.f, PADDLE_HEIGHT = 20.f, PADDLE_VELOCITY = 6.f;
+unsigned int WINDOW_WIDTH = 1280;
+unsigned int WINDOW_HEIGHT = 720;
+const float BALL_RADIUS = 10.f;
+const float BALL_VELOCITY = 8.f;
+const float PADDLE_WIDTH = 120.f;
+const float PADDLE_HEIGHT = 20.f;
+const float PADDLE_VELOCITY = 6.f;
 
-const float BLOCK_WIDTH = 60.f, BLOCK_HEIGHT = 20.f;
-const int COUNT_BLOCS_X = 18, COUNT_BLOCS_Y = 9;
+const float BLOCK_WIDTH = 60.f;
+const float BLOCK_HEIGHT = 20.f;
+const int COUNT_BLOCS_X = 18;
+const int COUNT_BLOCS_Y = 9;
 
 struct Paddle
 {
@@ -60,7 +66,7 @@ struct Ball
 	CircleShape shape;
 	Vector2f velocity{ -BALL_VELOCITY, -BALL_VELOCITY };
 
-	// mX, mY - начальные координаты
+	// mX, mY - РЅР°С‡Р°Р»СЊРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹
 	Ball(float mX, float mY)
 	{
 		shape.setPosition(mX, mY);
@@ -131,14 +137,14 @@ struct GameStruct
 	Ball mBall{ WINDOW_WIDTH / 2.f, WINDOW_HEIGHT / 2.f };
 };
 
-// Функция проверяет пересечение двух фигур
+// Р¤СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂСЏРµС‚ РїРµСЂРµСЃРµС‡РµРЅРёРµ РґРІСѓС… С„РёРіСѓСЂ
 template<class T1, class T2> bool isIntersecting(T1& mA, T2& mB)
 {
 	return mA.right() >= mB.left() && mA.left() <= mB.right() &&
 		mA.bottom() >= mB.top() && mA.top() <= mB.bottom();
 }
 
-// Функция проверяет пересечение мяча и контроллера
+// Р¤СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂСЏРµС‚ РїРµСЂРµСЃРµС‡РµРЅРёРµ РјСЏС‡Р° Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂР°
 bool TestCollision(GameStruct & game)
 {
 	if (game.mBall.y() + BALL_RADIUS >= WINDOW_HEIGHT)
@@ -154,8 +160,8 @@ bool TestCollision(GameStruct & game)
 
 	game.mBall.velocity.y = -BALL_VELOCITY;
 
-	// Горизонтальное направление мяча меняестся
-	// в зависимости от места удара об контроллер
+	// Р“РѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕРµ РЅР°РїСЂР°РІР»РµРЅРёРµ РјСЏС‡Р° РјРµРЅСЏРµСЃС‚СЃСЏ
+	// РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РјРµСЃС‚Р° СѓРґР°СЂР° РѕР± РєРѕРЅС‚СЂРѕР»Р»РµСЂ
 	if (game.mBall.x() < game.paddle.x())
 	{
 		game.mBall.velocity.x = -BALL_VELOCITY;
@@ -167,17 +173,17 @@ bool TestCollision(GameStruct & game)
 	return 1;
 }
 
-void CreateBackground(vector<Brick> & bricks, Texture & t, int & i)
+void CreateBackground(vector<Brick> & bricks, Texture & t, int & backgroundNumber)
 {
 	string background[] = { "0.png", "1.png", "2.png", "3.png", "4.png", "5.png" };
-	if (bricks.size() % 27 == 0 && i < 6)
+	if (bricks.size() % 27 == 0 && backgroundNumber < 6)
 	{
-		t.loadFromFile(background[i]);
-		++i;
+		t.loadFromFile(background[backgroundNumber]);
+		++backgroundNumber;
 	}
 }
 
-void TestCollision(Brick & mBrick, GameStruct & game, Texture & t, int & i)
+void TestCollision(Brick & mBrick, GameStruct & game, Texture & t, int & backgroundNumber)
 {	
 	if (!isIntersecting(mBrick, game.mBall))
 	{
@@ -185,27 +191,27 @@ void TestCollision(Brick & mBrick, GameStruct & game, Texture & t, int & i)
 	}
 
 	mBrick.destroyed = true;
-	CreateBackground(game.bricks, t, i);
+	CreateBackground(game.bricks, t, backgroundNumber);
 
 	float overlapLeft{ game.mBall.right() - mBrick.left() };
 	float overlapRight{ mBrick.right() - game.mBall.left() };
 	float overlapTop{ game.mBall.bottom() - mBrick.top() };
 	float overlapBottom{ mBrick.bottom() - game.mBall.top() };
 
-	// Если пересечение слева меньше пересечения справа,
-	// можно утверждать, что мяч ударился о блок с левой стороны
+	// Р•СЃР»Рё РїРµСЂРµСЃРµС‡РµРЅРёРµ СЃР»РµРІР° РјРµРЅСЊС€Рµ РїРµСЂРµСЃРµС‡РµРЅРёСЏ СЃРїСЂР°РІР°,
+	// РјРѕР¶РЅРѕ СѓС‚РІРµСЂР¶РґР°С‚СЊ, С‡С‚Рѕ РјСЏС‡ СѓРґР°СЂРёР»СЃСЏ Рѕ Р±Р»РѕРє СЃ Р»РµРІРѕР№ СЃС‚РѕСЂРѕРЅС‹
 	bool ballFromLeft{ abs(overlapLeft) < abs(overlapRight) };
 
-	// Аналогично рассуждаем об ударе о блок сверху или снизу
+	// РђРЅР°Р»РѕРіРёС‡РЅРѕ СЂР°СЃСЃСѓР¶РґР°РµРј РѕР± СѓРґР°СЂРµ Рѕ Р±Р»РѕРє СЃРІРµСЂС…Сѓ РёР»Рё СЃРЅРёР·Сѓ
 	bool ballFromTop{ abs(overlapTop) < abs(overlapBottom) };
 
-	// Запомним минимальные пересечения по осям X и Y
+	// Р—Р°РїРѕРјРЅРёРј РјРёРЅРёРјР°Р»СЊРЅС‹Рµ РїРµСЂРµСЃРµС‡РµРЅРёСЏ РїРѕ РѕСЃСЏРј X Рё Y
 	float minOverlapX{ ballFromLeft ? overlapLeft : overlapRight };
 	float minOverlapY{ ballFromTop ? overlapTop : overlapBottom };
 
-	// Если магнитуда пересечения по оси X меньше магнитуды по оси Y, мы
-	// можем утверждать, что мяч ударился о горизонтальную сторону блока,
-	// в противном случае - о вертикальную
+	// Р•СЃР»Рё РјР°РіРЅРёС‚СѓРґР° РїРµСЂРµСЃРµС‡РµРЅРёСЏ РїРѕ РѕСЃРё X РјРµРЅСЊС€Рµ РјР°РіРЅРёС‚СѓРґС‹ РїРѕ РѕСЃРё Y, РјС‹
+	// РјРѕР¶РµРј СѓС‚РІРµСЂР¶РґР°С‚СЊ, С‡С‚Рѕ РјСЏС‡ СѓРґР°СЂРёР»СЃСЏ Рѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅСѓСЋ СЃС‚РѕСЂРѕРЅСѓ Р±Р»РѕРєР°,
+	// РІ РїСЂРѕС‚РёРІРЅРѕРј СЃР»СѓС‡Р°Рµ - Рѕ РІРµСЂС‚РёРєР°Р»СЊРЅСѓСЋ
 	if (abs(minOverlapX) < abs(minOverlapY))
 	{
 		game.mBall.velocity.x = ballFromLeft ? -BALL_VELOCITY : BALL_VELOCITY;
@@ -235,13 +241,13 @@ void ArkanoidEvents(RenderWindow & window)
 	}
 }
 
-void Processgame(GameStruct & game, Texture & t, int & i, bool & gameover, bool & victory)
+void Processgame(GameStruct & game, Texture & t, int & backgroundNumber, bool & gameover, bool & victory)
 {
 	game.paddle.update();
 	game.mBall.update();
 	for (auto& brick : game.bricks)
 	{
-		TestCollision(brick, game, t, i);
+		TestCollision(brick, game, t, backgroundNumber);
 	}
 
 	game.bricks.erase(
@@ -249,12 +255,12 @@ void Processgame(GameStruct & game, Texture & t, int & i, bool & gameover, bool 
 		end(game.bricks));
 	if (!TestCollision(game))
 	{
-		// ПРОИГРЫШ
+		// РџР РћРР“Р Р«РЁ
 		gameover = true;
 	}
 	if (game.bricks.size() == 0)
 	{
-		// ПОБЕДА
+		// РџРћР‘Р•Р”Рђ
 		victory = true;
 	}
 }
@@ -279,7 +285,7 @@ void DrawArkanoid(RenderWindow & window, GameStruct & game, Sprite s, bool & gam
 		gameOver.setCharacterSize(60);
 		gameOver.setFillColor(Color::White);
 		gameOver.setStyle(Text::Bold);
-		gameOver.setPosition(WINDOW_WIDTH * 2 / 5, WINDOW_HEIGHT * 2 / 5);
+		gameOver.setPosition((float)WINDOW_WIDTH * 2 / 5, (float)WINDOW_HEIGHT * 2 / 5);
 		gameOver.setString("game Over");
 		window.draw(gameOver);
 	}
@@ -290,7 +296,7 @@ void DrawArkanoid(RenderWindow & window, GameStruct & game, Sprite s, bool & gam
 		Victory.setCharacterSize(60);
 		Victory.setFillColor(Color::White);
 		Victory.setStyle(Text::Bold);
-		Victory.setPosition(WINDOW_WIDTH * 2 / 5, WINDOW_HEIGHT * 2 / 5);
+		Victory.setPosition((float)WINDOW_WIDTH * 2 / 5, (float)WINDOW_HEIGHT * 2 / 5);
 		Victory.setString("Victory!!!");
 		window.draw(Victory);
 	}
@@ -301,7 +307,7 @@ void ProcessMainLoop(RenderWindow & window, GameStruct & game)
 {
 	Texture t;
 	Sprite s;
-	int i = 0;
+	int backgroundNumber = 0;
 	bool victory = false;
 	bool gameover = false;
 	CreateBackground(t, s);
@@ -310,7 +316,7 @@ void ProcessMainLoop(RenderWindow & window, GameStruct & game)
 		if (!gameover && !victory)
 		{
 			ArkanoidEvents(window);
-			Processgame(game, t, i, gameover, victory);
+			Processgame(game, t, backgroundNumber, gameover, victory);
 			DrawArkanoid(window, game, s, gameover, victory);
 		}
 	}
@@ -319,11 +325,11 @@ void ProcessMainLoop(RenderWindow & window, GameStruct & game)
 int main(int argc, char * argv[])
 {
 	GameStruct game;
-	for (int iX = 0; iX < COUNT_BLOCS_X; ++iX)
+	for (int row = 0; row < COUNT_BLOCS_X; ++row)
 	{
-		for (int iY = 0; iY < COUNT_BLOCS_Y; ++iY)
+		for (int column = 0; column < COUNT_BLOCS_Y; ++column)
 		{
-			game.bricks.emplace_back((iX + 1) * (BLOCK_WIDTH + 3) + 22, (iY + 2) * (BLOCK_HEIGHT + 3));
+			game.bricks.emplace_back((row + 1) * (BLOCK_WIDTH + 3) + 22, (column + 2) * (BLOCK_HEIGHT + 3));
 		}
 	}
 
